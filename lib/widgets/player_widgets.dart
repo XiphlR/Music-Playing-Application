@@ -139,6 +139,16 @@ class _ProgressBarSectionState extends State<ProgressBarSection> {
 
   @override
   Widget build(BuildContext context) {
+    // 1. กำหนดเวลาทั้งหมดของเพลง (เช่น 4 นาที = 240 วินาที)
+    const int totalDurationInSeconds = 240; 
+    
+    // 2. คำนวณเวลาปัจจุบันจาก Slider (0.0 - 1.0)
+    final int currentSeconds = (sliderValue * totalDurationInSeconds).toInt();
+    
+    // 3. แปลงเป็น นาที และ วินาที
+    final int minutes = currentSeconds ~/ 60; // หารเอาจำนวนเต็ม
+    final int seconds = currentSeconds % 60;  // เอาเศษที่เหลือ
+
     return Column(
       children: [
         SliderTheme(
@@ -164,10 +174,12 @@ class _ProgressBarSectionState extends State<ProgressBarSection> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // 4. แสดงผล เวลาปัจจุบัน
               Text(
-                "${(sliderValue * 4).toInt()}:${((sliderValue * 100) % 60).toInt().toString().padLeft(2, '0')}", 
+                "$minutes:${seconds.toString().padLeft(2, '0')}", 
                 style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)
               ),
+              // เวลาจบ (Hardcode ไว้ให้ตรงกับ totalDurationInSeconds)
               Text("4:00", style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
             ],
           ),

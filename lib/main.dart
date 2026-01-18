@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:audio_service/audio_service.dart'; // import
+import 'package:get_it/get_it.dart'; // import
+import 'services/audio_handler.dart'; // import ไฟล์ที่เพิ่งสร้าง
 import 'screens/player_screen.dart';
 
-void main() {
+final getIt = GetIt.instance;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final audioHandler = await initAudioService();
+  getIt.registerSingleton<AudioHandler>(audioHandler);
+
   runApp(const MyApp());
 }
 
@@ -18,7 +28,6 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF151521),
         primaryColor: const Color(0xFF8B2CF5),
         useMaterial3: true,
-        fontFamily: 'Roboto',
       ),
       home: const PlayerScreen(),
     );

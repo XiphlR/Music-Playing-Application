@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import '../widgets/player_widgets.dart';
 import '../services/audio_handler.dart';
+
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({super.key});
 
@@ -11,17 +12,19 @@ class PlayerScreen extends StatefulWidget {
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
+
   final _audioHandler = GetIt.I<AudioHandler>();
 
   @override
   void initState() {
     super.initState();
+
     if (_audioHandler is MyAudioHandler) {
-      (_audioHandler).loadSong(
-        'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // URL เพลง
-        "The Future of UI", // ชื่อเพลง
-        "Design Matters Podcast", // ศิลปิน
-        "https://images.unsplash.com/photo-1614850523060-8da1d56ae167" // ปก
+      (_audioHandler as MyAudioHandler).loadSong(
+        'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+        "The Future of UI",
+        "Design Matters Podcast",
+        "https://images.unsplash.com/photo-1614850523060-8da1d56ae167"
       );
     }
   }
@@ -33,10 +36,15 @@ class _PlayerScreenState extends State<PlayerScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
           child: StreamBuilder<MediaItem?>(
+
             stream: _audioHandler.mediaItem,
             builder: (context, snapshot) {
               final mediaItem = snapshot.data;
-              if (mediaItem == null) return const Center(child: CircularProgressIndicator(color: kPrimaryColor));
+              
+
+              if (mediaItem == null) {
+                return const Center(child: CircularProgressIndicator(color: kPrimaryColor));
+              }
 
               return Column(
                 children: [
@@ -58,28 +66,33 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     stream: _audioHandler.playbackState,
                     builder: (context, stateSnapshot) {
                       final state = stateSnapshot.data;
+                      
+
                       final playing = state?.playing ?? false;
                       final position = state?.position ?? Duration.zero;
                       final duration = mediaItem.duration ?? Duration.zero;
 
                       return Column(
                         children: [
-                           StreamBuilder<Duration>(
-                             stream: AudioService.position,
-                             builder: (context, positionSnapshot) {
-                               final currentPos = positionSnapshot.data ?? position;
-                               return ProgressBarSection(
+                          StreamBuilder<Duration>(
+                            stream: AudioService.position,
+                            builder: (context, positionSnapshot) {
+
+                              final currentPos = positionSnapshot.data ?? position;
+                              
+                              return ProgressBarSection(
                                 currentPosition: currentPos,
                                 totalDuration: duration,
                                 onSeek: (newPosition) {
-                                   _audioHandler.seek(newPosition);
+                                  _audioHandler.seek(newPosition);
                                 },
                               );
-                             }
-                           ),
+                            },
+                          ),
                           
                           const SizedBox(height: 10),
                           
+
                           PlaybackControls(
                             isPlaying: playing,
                             onPlayPause: () {

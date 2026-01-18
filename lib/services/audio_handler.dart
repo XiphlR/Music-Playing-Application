@@ -14,38 +14,37 @@ Future<AudioHandler> initAudioService() async {
 }
 
 class MyAudioHandler extends BaseAudioHandler {
-  final _player = AudioPlayer(); // สร้างตัวเล่นเพลง just_audio
+  final _player = AudioPlayer(); // ตัวเล่นเพลงหลัก
 
   MyAudioHandler() {
+
     _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
 
     _player.durationStream.listen((duration) {
-      final index = _player.currentIndex;
-      final newQueue = queue.value;
-      if (index != null && newQueue.isNotEmpty) {
-
-        final oldMediaItem = newQueue[index];
-        final newMediaItem = oldMediaItem.copyWith(duration: duration);
-        mediaItem.add(newMediaItem);
+      if (duration != null) {
+        final currentItem = mediaItem.value;
+        if (currentItem != null) {
+          final newItem = currentItem.copyWith(duration: duration);
+          mediaItem.add(newItem); 
+        }
       }
     });
   }
 
+
   PlaybackState _transformEvent(PlaybackEvent event) {
     return PlaybackState(
-
       controls: [
         MediaControl.skipToPrevious,
         if (_player.playing) MediaControl.pause else MediaControl.play,
         MediaControl.skipToNext,
       ],
-
       systemActions: const {
         MediaAction.seek,
         MediaAction.seekForward,
         MediaAction.seekBackward,
       },
-
+      androidCompactActionIndices: const [0, 1, 3],
       processingState: const {
         ProcessingState.idle: AudioProcessingState.idle,
         ProcessingState.loading: AudioProcessingState.loading,
@@ -61,8 +60,6 @@ class MyAudioHandler extends BaseAudioHandler {
     );
   }
 
-
-
   @override
   Future<void> play() => _player.play();
 
@@ -75,7 +72,12 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> stop() => _player.stop();
 
+  // ฟังก์ชันปรับเสียง
+  Future<void> setVolume(double volume) async {
+    await _player.setVolume(volume);
+  }
 
+  // ฟังก์ชันโหลดเพลง
   Future<void> loadSong(String url, String title, String artist, String artUri) async {
     final item = MediaItem(
       id: url,
@@ -83,17 +85,16 @@ class MyAudioHandler extends BaseAudioHandler {
       title: title,
       artist: artist,
       artUri: Uri.parse(artUri),
-      duration: null,
+      duration: null, 
     );
     
     mediaItem.add(item);
-
-    _player.setAudioSource(AudioSource.uri(Uri.parse(url)));
-    _player.play();
-  }
-
-
-  Future<void> setVolume(double volume) async {
-    await _player.setVolume(volume);
+    
+    try {
+      await _player.setAudioSource(AudioSource.uri(Uri.parse(url)));
+      _player.play();
+    } catch (e) {
+      print("Error loading song: $e");
+    }
   }
 }

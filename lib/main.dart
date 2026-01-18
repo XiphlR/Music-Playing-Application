@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:audio_service/audio_service.dart'; // import
-import 'package:get_it/get_it.dart'; // import
-import 'services/audio_handler.dart'; // import ไฟล์ที่เพิ่งสร้าง
+import 'package:audio_service/audio_service.dart';
+import 'package:get_it/get_it.dart';
+
+import 'services/audio_handler.dart'; 
 import 'screens/player_screen.dart';
 
 final getIt = GetIt.instance;

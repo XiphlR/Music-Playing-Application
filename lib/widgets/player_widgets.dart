@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:audio_service/audio_service.dart';
-import '../services/audio_handler.dart';
-
+// ตรวจสอบว่าไฟล์ audio_handler.dart อยู่ใน folder services จริงๆ
+import '../services/audio_handler.dart'; 
 
 const Color kPrimaryColor = Color(0xFF8B2CF5);
 const Color kSecondaryColor = Color(0xFF2C2C35);
 const Color kInactiveColor = Colors.grey;
 
-// 1. Top Navigation Bar (เหมือนเดิม)
+
+// 1. Top Navigation Bar
 class TopNavBar extends StatelessWidget {
   const TopNavBar({super.key});
 
@@ -39,7 +40,8 @@ class TopNavBar extends StatelessWidget {
   }
 }
 
-// 2. Album Art Widget (แก้ให้รับ URL รูปภาพได้)
+
+// 2. Album Art Widget
 class AlbumArt extends StatelessWidget {
   final String? artUri;
   const AlbumArt({super.key, this.artUri});
@@ -68,7 +70,8 @@ class AlbumArt extends StatelessWidget {
   }
 }
 
-// 3. Song Info Widget (Stateless, รับค่ามาแสดง)
+
+// 3. Song Info Widget
 class SongInfoSection extends StatelessWidget {
   final String title;
   final String artist;
@@ -115,7 +118,7 @@ class SongInfoSection extends StatelessWidget {
           child: IconButton(
             icon: const Icon(Icons.favorite_border, color: Colors.grey),
             onPressed: () {
-              // TODO: Implement favorites logic with Hive later
+              // TODO: Implement Favorite Logic
             },
           ),
         )
@@ -124,7 +127,8 @@ class SongInfoSection extends StatelessWidget {
   }
 }
 
-// 4. Progress Bar Widget (แก้ไขให้รับค่า Position และ Duration จาก AudioService)
+
+// 4. Progress Bar Widget
 class ProgressBarSection extends StatelessWidget {
   final Duration currentPosition;
   final Duration totalDuration;
@@ -139,12 +143,15 @@ class ProgressBarSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // คำนวณ % ของ Slider (0.0 - 1.0)
+    final double totalMilliseconds = totalDuration.inMilliseconds.toDouble();
+    final double currentMilliseconds = currentPosition.inMilliseconds.toDouble();
+
     double sliderValue = 0.0;
-    if (totalDuration.inMilliseconds > 0) {
-      sliderValue = currentPosition.inMilliseconds / totalDuration.inMilliseconds;
-      sliderValue = sliderValue.clamp(0.0, 1.0); // ป้องกันค่าเกิน
+    if (totalMilliseconds > 0) {
+      sliderValue = currentMilliseconds / totalMilliseconds;
     }
+
+    sliderValue = sliderValue.clamp(0.0, 1.0);
 
     return Column(
       children: [
@@ -159,12 +166,11 @@ class ProgressBarSection extends StatelessWidget {
           ),
           child: Slider(
             value: sliderValue,
+            min: 0.0,
+            max: 1.0,
             onChanged: (value) {
-              // แปลงค่า Slider (0.0-1.0) กลับเป็น Duration เพื่อ Seek
-              final newPosition = Duration(
-                milliseconds: (value * totalDuration.inMilliseconds).toInt(),
-              );
-              onSeek(newPosition);
+              final newPositionMilliseconds = value * totalMilliseconds;
+              onSeek(Duration(milliseconds: newPositionMilliseconds.toInt()));
             },
           ),
         ),
@@ -188,7 +194,6 @@ class ProgressBarSection extends StatelessWidget {
     );
   }
 
-  // ฟังก์ชันแปลงเวลา 125 -> 02:05
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -196,6 +201,7 @@ class ProgressBarSection extends StatelessWidget {
     return "$minutes:$seconds";
   }
 }
+
 
 // 5. Playback Controls Widget
 class PlaybackControls extends StatelessWidget {
@@ -225,7 +231,6 @@ class PlaybackControls extends StatelessWidget {
           icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36),
           onPressed: onPrevious,
         ),
-        // ปุ่ม Play/Pause
         GestureDetector(
           onTap: onPlayPause,
           child: Container(
@@ -263,7 +268,7 @@ class PlaybackControls extends StatelessWidget {
 }
 
 
-// 6. Volume Control
+// 6. Volume Control Widget
 class VolumeControl extends StatefulWidget {
   const VolumeControl({super.key});
 

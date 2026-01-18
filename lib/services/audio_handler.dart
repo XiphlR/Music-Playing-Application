@@ -91,4 +91,9 @@ class MyAudioHandler extends BaseAudioHandler {
     _player.setAudioSource(AudioSource.uri(Uri.parse(url)));
     _player.play();
   }
+
+
+  Future<void> setVolume(double volume) async {
+    await _player.setVolume(volume);
+  }
 }

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:audio_service/audio_service.dart';
+import '../services/audio_handler.dart';
+
 
 const Color kPrimaryColor = Color(0xFF8B2CF5);
 const Color kSecondaryColor = Color(0xFF2C2C35);
@@ -193,7 +197,7 @@ class ProgressBarSection extends StatelessWidget {
   }
 }
 
-// 5. Playback Controls Widget (รับสถานะ Playing และ Callbacks)
+// 5. Playback Controls Widget
 class PlaybackControls extends StatelessWidget {
   final bool isPlaying;
   final VoidCallback onPlayPause;
@@ -258,7 +262,8 @@ class PlaybackControls extends StatelessWidget {
   }
 }
 
-// 6. Volume Control (UI Only สำหรับตอนนี้)
+
+// 6. Volume Control
 class VolumeControl extends StatefulWidget {
   const VolumeControl({super.key});
 
@@ -267,40 +272,64 @@ class VolumeControl extends StatefulWidget {
 }
 
 class _VolumeControlState extends State<VolumeControl> {
-  double volumeValue = 0.7;
+  final _audioHandler = GetIt.I<AudioHandler>();
+  
+  double volumeValue = 1.0; 
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.volume_down, color: Colors.white.withOpacity(0.5), size: 20),
+        IconButton(
+          icon: Icon(Icons.volume_down, color: Colors.white.withOpacity(0.5), size: 20),
+          onPressed: () {
+             final newVal = (volumeValue - 0.1).clamp(0.0, 1.0);
+             _updateVolume(newVal);
+          },
+        ),
         Expanded(
           child: SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: Colors.grey,
               inactiveTrackColor: Colors.grey.withOpacity(0.2),
-              thumbColor: Colors.transparent,
+              thumbColor: Colors.white,
               trackHeight: 3.0,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 0.0),
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
             ),
             child: Slider(
               value: volumeValue,
+              min: 0.0,
+              max: 1.0,
               onChanged: (value) {
-                setState(() {
-                  volumeValue = value;
-                  // TODO: ต่อกับ AudioService เพื่อปรับเสียงจริง (ถ้าต้องการ)
-                });
+                _updateVolume(value);
               },
             ),
           ),
         ),
-        Icon(Icons.volume_up, color: Colors.white.withOpacity(0.5), size: 20),
+        IconButton(
+          icon: Icon(Icons.volume_up, color: Colors.white.withOpacity(0.5), size: 20),
+          onPressed: () {
+             final newVal = (volumeValue + 0.1).clamp(0.0, 1.0);
+             _updateVolume(newVal);
+          },
+        ),
       ],
     );
   }
+
+  void _updateVolume(double value) {
+    setState(() {
+      volumeValue = value;
+    });
+    
+    if (_audioHandler is MyAudioHandler) {
+      (_audioHandler as MyAudioHandler).setVolume(value);
+    }
+  }
 }
 
-// 7. Bottom Navigation (เหมือนเดิม)
+
+// 7. Bottom Navigation
 class BottomPlayerNav extends StatelessWidget {
   const BottomPlayerNav({super.key});
 

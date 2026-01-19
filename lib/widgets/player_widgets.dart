@@ -180,7 +180,7 @@ class _VolumeControlState extends State<VolumeControl> {
       IconButton(icon: Icon(Icons.volume_up, color: Colors.white.withOpacity(0.5), size: 20), onPressed: () { final newVal = (volumeValue + 0.1).clamp(0.0, 1.0); _updateVolume(newVal); }),
     ]);
   }
-  void _updateVolume(double value) { setState(() { volumeValue = value; }); if (_audioHandler is MyAudioHandler) { (_audioHandler as MyAudioHandler).setVolume(value); } }
+  void _updateVolume(double value) { setState(() { volumeValue = value; }); if (_audioHandler is MyAudioHandler) { (_audioHandler).setVolume(value); } }
 }
 
 // 7. Bottom Navigation

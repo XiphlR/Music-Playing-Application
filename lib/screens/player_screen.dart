@@ -20,7 +20,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void initState() {
     super.initState();
     if (_audioHandler is MyAudioHandler) {
-      (_audioHandler as MyAudioHandler).loadSong(
+      (_audioHandler).loadSong(
         'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
         "The Future of UI",
         "Design Matters Podcast",
@@ -101,7 +101,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                 onNext: () => _audioHandler.skipToNext(),
                                 onPrevious: () => _audioHandler.skipToPrevious(),
                                 // สั่ง Toggle Repeat
-                                onRepeat: () => (_audioHandler as MyAudioHandler).toggleRepeat(),
+                                onRepeat: () => (_audioHandler).toggleRepeat(),
                               );
                             }
                           ),

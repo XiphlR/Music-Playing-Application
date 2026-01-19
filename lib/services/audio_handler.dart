@@ -17,7 +17,6 @@ class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer(); // ตัวเล่นเพลงหลัก
 
   MyAudioHandler() {
-
     _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
 
     _player.durationStream.listen((duration) {
@@ -31,6 +30,17 @@ class MyAudioHandler extends BaseAudioHandler {
     });
   }
 
+
+  Stream<LoopMode> get loopModeStream => _player.loopModeStream;
+
+  Future<void> toggleRepeat() async {
+    final currentMode = _player.loopMode;
+    if (currentMode == LoopMode.off) {
+      await _player.setLoopMode(LoopMode.one); // เปิดวนซ้ำเพลงเดียว
+    } else {
+      await _player.setLoopMode(LoopMode.off); // ปิดวนซ้ำ
+    }
+  }
 
   PlaybackState _transformEvent(PlaybackEvent event) {
     return PlaybackState(

@@ -4,7 +4,8 @@ import 'package:get_it/get_it.dart';
 
 import 'services/audio_handler.dart'; 
 //import 'screens/player_screen.dart';
-import 'screens/home_screen.dart';
+//import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
 
 final getIt = GetIt.instance;
 
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
         primaryColor: const Color(0xFF8B2CF5),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const ProfileScreen(),
     );
   }
 }

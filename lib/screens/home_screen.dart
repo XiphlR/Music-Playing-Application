@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'player_screen.dart';
+import 'profile_screen.dart';
+import 'search_screen.dart';
+import 'playlist_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -91,16 +95,23 @@ class _HomeScreenState extends State<HomeScreen> {
       child: BottomNavigationBar(
         backgroundColor: const Color(0xFF151521),
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF8B2CF5), // สีม่วง
+        selectedItemColor: const Color(0xFF8B2CF5),
         unselectedItemColor: Colors.grey,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         currentIndex: _selectedIndex,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          if (index == 1) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
+          }else if (index == 2) {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PlaylistScreen()));
+          } else if (index == 3) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
+          } else {
+            setState(() => _selectedIndex = index);
+          }
         },
+        
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),

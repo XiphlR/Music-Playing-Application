@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'search_screen.dart';
-import 'profile_screen.dart';
-import 'player_screen.dart';
+import '../widgets/app_widgets.dart';
 
 class PlaylistScreen extends StatefulWidget {
   const PlaylistScreen({super.key});
@@ -12,7 +9,6 @@ class PlaylistScreen extends StatefulWidget {
 }
 
 class _PlaylistScreenState extends State<PlaylistScreen> {
-  int _selectedIndex = 2;
   bool isQueueSelected = true;
 
   @override
@@ -80,7 +76,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 children: [
                   if (isQueueSelected) const _FloatingControlPanel(),
                   const SizedBox(height: 10),
-                  _buildBottomNavBar(context),
+                  const CustomBottomNavBar(selectedIndex: 2),
                 ],
               ),
             ),
@@ -111,7 +107,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       borderRadius: BorderRadius.circular(25),
                     ),
                     alignment: Alignment.center,
-                    child: Text(
+                    child: const Text(
                       "Queue",
                       style: TextStyle(
                         color: Colors.white,
@@ -174,40 +170,9 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       ),
     );
   }
-
-  Widget _buildBottomNavBar(BuildContext context) {
-    return Container(
-      color: const Color(0xFF151521),
-      padding: const EdgeInsets.only(top: 10),
-      child: BottomNavigationBar(
-        backgroundColor: const Color(0xFF151521),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF8B2CF5),
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-          } else if (index == 1) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
-          } else if (index == 3) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
-          } else {
-            setState(() => _selectedIndex = index);
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.play_circle_outline), label: "Playing"), // เปลี่ยนไอคอนให้ตรง
-          BottomNavigationBarItem(icon: Icon(Icons.queue_music), label: "Playlists"), // เปลี่ยน Label ให้ตรงบริบท
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
-      ),
-    );
-  }
 }
+
+// --- Widgets เฉพาะของหน้า Playlist ---
 
 class _LibraryHeader extends StatelessWidget {
   const _LibraryHeader();

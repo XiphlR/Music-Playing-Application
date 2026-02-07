@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'player_screen.dart';
-import 'home_screen.dart';
-import 'profile_screen.dart';
+import '../widgets/app_widgets.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -11,7 +9,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  int _selectedIndex = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -38,13 +35,23 @@ class _SearchScreenState extends State<SearchScreen> {
                     
                     const SizedBox(height: 25),
                     
-                    const _SectionHeader(title: "Recent searches", action: "CLEAR ALL"),
+                    const SectionTitle(title: "Recent searches"),
+
+                     const SizedBox(height: 5),
+                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                         const Text("Recent searches", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                         Text("CLEAR ALL", style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+
                     const SizedBox(height: 10),
                     const _RecentSearchesList(),
                     
                     const SizedBox(height: 25),
                     
-                    const _SectionHeader(title: "Browse all"),
+                    const SectionTitle(title: "Browse all"),
                     const SizedBox(height: 15),
                     const _BrowseAllGrid(),
                   ],
@@ -52,14 +59,14 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-            Positioned(
+            const Positioned(
               bottom: 0,
               left: 0,
               right: 0,
               child: Column(
                 children: [
-                  const _MiniPlayerSearch(),
-                  _buildBottomNavBar(context),
+                  MiniPlayer(),
+                  CustomBottomNavBar(selectedIndex: 1),
                 ],
               ),
             ),
@@ -68,40 +75,8 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-
-  Widget _buildBottomNavBar(BuildContext context) {
-    return Container(
-      color: const Color(0xFF151521),
-      padding: const EdgeInsets.only(top: 10),
-      child: BottomNavigationBar(
-        backgroundColor: const Color(0xFF151521),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF8B2CF5),
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-          } else if (index == 3) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
-          } else {
-            setState(() {
-              _selectedIndex = index;
-            });
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
-          BottomNavigationBarItem(icon: Icon(Icons.library_music), label: "Library"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
-      ),
-    );
-  }
 }
+
 
 class _SearchHeader extends StatelessWidget {
   const _SearchHeader();
@@ -302,70 +277,6 @@ class _BrowseAllGrid extends StatelessWidget {
             ),
           )
         ],
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final String? action;
-  const _SectionHeader({required this.title, this.action});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-        if (action != null)
-          Text(action!, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12, fontWeight: FontWeight.bold)),
-      ],
-    );
-  }
-}
-
-class _MiniPlayerSearch extends StatelessWidget {
-  const _MiniPlayerSearch();
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const PlayerScreen()));
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF21212E),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        child: Row(
-          children: [
-            const CircleAvatar(
-              radius: 22,
-              backgroundImage: NetworkImage('https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=100&q=80'),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Starboy", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  Text("The Weeknd", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                ],
-              ),
-            ),
-            IconButton(icon: const Icon(Icons.skip_previous, color: Colors.white), onPressed: () {}),
-            Container(
-              decoration: const BoxDecoration(color: Color(0xFF8B2CF5), shape: BoxShape.circle),
-              child: const Icon(Icons.play_arrow, color: Colors.white),
-            ),
-            IconButton(icon: const Icon(Icons.skip_next, color: Colors.white), onPressed: () {}),
-          ],
-        ),
       ),
     );
   }

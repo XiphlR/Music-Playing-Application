@@ -32,6 +32,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF151521), 
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
@@ -48,12 +49,25 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 children: [
                   const TopNavBar(),
                   const SizedBox(height: 30),
-                  AlbumArt(artUri: mediaItem.artUri?.toString()),
-                  const SizedBox(height: 30),
-                  SongInfoSection(
-                    title: mediaItem.title,
-                    artist: mediaItem.artist ?? '',
+                  
+                  Hero(
+                    tag: 'album_art',
+                    child: AlbumArt(artUri: mediaItem.artUri?.toString()),
                   ),
+                  
+                  const SizedBox(height: 30),
+                  
+                  Hero(
+                    tag: 'song_title',
+                    child: Material(
+                      color: Colors.transparent,
+                      child: SongInfoSection(
+                        title: mediaItem.title,
+                        artist: mediaItem.artist ?? '',
+                      ),
+                    ),
+                  ),
+                  
                   const SizedBox(height: 20),
                   
                   StreamBuilder<PlaybackState>(
@@ -100,7 +114,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                 },
                                 onNext: () => _audioHandler.skipToNext(),
                                 onPrevious: () => _audioHandler.skipToPrevious(),
-                                // สั่ง Toggle Repeat
                                 onRepeat: () => (_audioHandler).toggleRepeat(),
                               );
                             }

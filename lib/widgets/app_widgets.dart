@@ -19,7 +19,17 @@ class MiniPlayer extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const PlayerScreen()),
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 500),
+            reverseTransitionDuration: const Duration(milliseconds: 500),
+            pageBuilder: (context, animation, secondaryAnimation) => const PlayerScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+          ),
         );
       },
       child: Container(
@@ -32,17 +42,30 @@ class MiniPlayer extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 20,
-              backgroundImage: NetworkImage('https://images.unsplash.com/photo-1614850523060-8da1d56ae167'),
+            Hero(
+              tag: 'album_art', 
+              child: const CircleAvatar(
+                radius: 20,
+                backgroundImage: NetworkImage('https://images.unsplash.com/photo-1614850523060-8da1d56ae167'),
+              ),
             ),
             const SizedBox(width: 15),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Blinding Lights", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  Text("The Weeknd", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  Hero(
+                    tag: 'song_title',
+                    child: Material(
+                      color: Colors.transparent,
+                      child: const Text(
+                        "Blinding Lights", 
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                      ),
+                    ),
+                  ),
+                  const Text("The Weeknd", style: TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             ),

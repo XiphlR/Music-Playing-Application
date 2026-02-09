@@ -12,14 +12,31 @@ const Color kInactiveColor = Colors.grey;
 // 1. Top Navigation Bar
 class TopNavBar extends StatelessWidget {
   const TopNavBar({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        IconButton(icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white), onPressed: () {}),
-        Text("NOW PLAYING", style: TextStyle(color: Colors.white.withOpacity(0.6), letterSpacing: 1.2, fontSize: 12, fontWeight: FontWeight.bold)),
-        IconButton(icon: const Icon(Icons.more_horiz, color: Colors.white), onPressed: () {}),
+        IconButton(
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context); 
+          },
+        ),
+        Text(
+          "NOW PLAYING",
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.6),
+            letterSpacing: 1.2,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.more_horiz, color: Colors.white),
+          onPressed: () {},
+        ),
       ],
     );
   }

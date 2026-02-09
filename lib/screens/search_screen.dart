@@ -34,8 +34,6 @@ class _SearchScreenState extends State<SearchScreen> {
                     const _FilterChips(),
                     
                     const SizedBox(height: 25),
-                    
-                    const SectionTitle(title: "Recent searches"),
 
                      const SizedBox(height: 5),
                      Row(

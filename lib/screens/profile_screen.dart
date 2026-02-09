@@ -209,7 +209,6 @@ class _FavoritesList extends StatelessWidget {
     return Column(
       children: [
         _buildListItem("Midnight City", "M83 • Hurry Up, We're Dreaming", "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=100&q=80"),
-        _buildListItem("The Daily Stoic", "Ryan Holiday • Episode #42", "https://images.unsplash.com/photo-1478737270239-2f02b77ac6d5?auto=format&fit=crop&w=100&q=80"),
         _buildListItem("Bohemian Rhapsody", "Queen • A Night at the Opera", "https://images.unsplash.com/photo-1501612780327-45045538702b?auto=format&fit=crop&w=100&q=80"),
       ],
     );

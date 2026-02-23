@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'services/audio_handler.dart'; 
-
+import 'models/song_model.dart';
 import 'screens/home_screen.dart';
-
 
 final getIt = GetIt.instance;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  await Hive.initFlutter(); 
+  Hive.registerAdapter(SongModelAdapter());
+  await Hive.openBox<SongModel>('home_songs');
+  await Hive.openBox<SongModel>('favorites');
+
   final audioHandler = await initAudioService();
   getIt.registerSingleton<AudioHandler>(audioHandler);
 

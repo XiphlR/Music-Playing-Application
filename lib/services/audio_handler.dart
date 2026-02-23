@@ -14,7 +14,7 @@ Future<AudioHandler> initAudioService() async {
 }
 
 class MyAudioHandler extends BaseAudioHandler {
-  final _player = AudioPlayer(); // ตัวเล่นเพลงหลัก
+  final _player = AudioPlayer();
 
   MyAudioHandler() {
     _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
@@ -30,15 +30,14 @@ class MyAudioHandler extends BaseAudioHandler {
     });
   }
 
-
   Stream<LoopMode> get loopModeStream => _player.loopModeStream;
 
   Future<void> toggleRepeat() async {
     final currentMode = _player.loopMode;
     if (currentMode == LoopMode.off) {
-      await _player.setLoopMode(LoopMode.one); // เปิดวนซ้ำเพลงเดียว
+      await _player.setLoopMode(LoopMode.one);
     } else {
-      await _player.setLoopMode(LoopMode.off); // ปิดวนซ้ำ
+      await _player.setLoopMode(LoopMode.off);
     }
   }
 
@@ -82,27 +81,29 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> stop() => _player.stop();
 
-  // ฟังก์ชันปรับเสียง
   Future<void> setVolume(double volume) async {
     await _player.setVolume(volume);
   }
 
-  // ฟังก์ชันโหลดเพลง
   Future<void> loadSong(String url, String title, String artist, String artUri) async {
-    final item = MediaItem(
-      id: url,
-      album: "Music Player",
-      title: title,
-      artist: artist,
-      artUri: Uri.parse(artUri),
-      duration: null, 
-    );
-    
-    mediaItem.add(item);
-    
     try {
+      await _player.stop(); 
+
+      final item = MediaItem(
+        id: url,
+        album: "Music Player",
+        title: title,
+        artist: artist,
+        artUri: Uri.parse(artUri),
+        duration: null, 
+      );
+      
+      mediaItem.add(item);
+      
       await _player.setAudioSource(AudioSource.uri(Uri.parse(url)));
+      
       _player.play();
+
     } catch (e) {
       print("Error loading song: $e");
     }

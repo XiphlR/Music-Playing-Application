@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart'; 
+import '../models/song_model.dart'; 
 import '../widgets/app_widgets.dart';
+import 'package:flutter/gestures.dart';
+
+import 'package:get_it/get_it.dart';
+import 'package:audio_service/audio_service.dart';
+import '../services/audio_handler.dart';
+import 'player_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,9 +17,74 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isHiveReady = false; 
+
+  @override
+  void initState() {
+    super.initState();
+    _setupInitialSongs();
+  }
+
+  // ทดลองเพิ่มเพลงลง Hive
+  Future<void> _setupInitialSongs() async {
+    final box = await Hive.openBox<SongModel>('home_songs');
+    
+    // ลองเอาออกชั่วคราว ทดลองการบันทึกข้อมูลลง Hive
+    /* if (box.isEmpty) {
+      await box.putAll({
+        'song1': SongModel(
+          id: 'song1',
+          title: "Daily Mix 1",
+          artist: "Dua Lipa, Drake",
+          artUri: "https://images.unsplash.com/photo-1514525253440-b393452e3726?auto=format&fit=crop&w=200&q=80",
+          audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        ),
+        'song2': SongModel(
+          id: 'song2',
+          title: "On Repeat",
+          artist: "Songs you love",
+          artUri: "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=200&q=80",
+          audioUrl: "https://www.dropbox.com/scl/fi/5wfwjk9779o4humsztoag/Ai-Scream-AiScReam-Lyrics-COLOR-CODED-LoveLive-Njma.mp3?rlkey=lg8zcz1wwlif0j0yrlvkjnvfq&st=rwheoyaj&dl=1",
+        ),
+        'song3': SongModel(
+          id: 'song3',
+          title: "Late Night",
+          artist: "Soft instrumental",
+          artUri: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=200&q=80",
+          audioUrl: "https://www.dropbox.com/scl/fi/t51aanddts1x7ask85ek0/KATSEYE-Touch-Official-MV-HYBE-LABELS.mp3?rlkey=il4y00h7o484b83td0lfprv2o&st=t8lgi1za&dl=1",
+        ),
+        'song4': SongModel(
+          id: 'song4',
+          title: "Jazz Vibes",
+          artist: "Smooth Jazz",
+          artUri: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=200&q=80",
+          audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+        ),
+        'song5': SongModel(
+          id: 'song5',
+          title: "Rock Classics",
+          artist: "The Legends",
+          artUri: "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=200&q=80", 
+          audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", 
+        ),
+      });
+    }
+    */
+
+    setState(() {
+      _isHiveReady = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isHiveReady) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF151521),
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF8B2CF5))),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF151521),
       body: SafeArea(
@@ -44,11 +117,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 15),
+                    
                     const _MadeForYouList(),
+                    
                     const SizedBox(height: 30),
-                    
                     const SectionTitle(title: "Explore Categories"),
-                    
                     const SizedBox(height: 15),
                     const _ExploreGrid(),
                   ],
@@ -73,7 +146,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
 
 class _HomeHeader extends StatelessWidget {
   const _HomeHeader();
@@ -163,33 +235,137 @@ class _NewReleaseBanner extends StatelessWidget {
   }
 }
 
+
 class _MadeForYouList extends StatelessWidget {
   const _MadeForYouList();
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildItem("Daily Mix 1", "Dua Lipa, Drake", "https://images.unsplash.com/photo-1514525253440-b393452e3726?auto=format&fit=crop&w=200&q=80"),
-          _buildItem("On Repeat", "Songs you love", "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=200&q=80"),
-          _buildItem("Late Night", "Soft instrumental", "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=200&q=80"),
-        ],
+    final audioHandler = GetIt.I<AudioHandler>();
+    final box = Hive.box<SongModel>('home_songs');
+
+    return ValueListenableBuilder(
+      valueListenable: box.listenable(),
+      builder: (context, Box<SongModel> songBox, _) {
+        final songs = songBox.values.toList();
+
+        return SizedBox(
+          height: 200, 
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+              dragDevices: {
+                PointerDeviceKind.touch,
+                PointerDeviceKind.mouse,
+              },
+            ),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ), 
+              itemCount: songs.length,
+              itemBuilder: (context, index) {
+                final song = songs[index];
+                return _buildItem(
+                  context,
+                  audioHandler,
+                  title: song.title,
+                  subtitle: song.artist,
+                  imageUrl: song.artUri,
+                  mp3Url: song.audioUrl,
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildItem(
+    BuildContext context,
+    AudioHandler audioHandler, {
+    required String title,
+    required String subtitle,
+    required String imageUrl,
+    required String mp3Url,
+  }) {
+    return GestureDetector(
+      onTap: () async {
+        if (audioHandler is MyAudioHandler) {
+          await audioHandler.loadSong(
+            mp3Url, 
+            title, 
+            subtitle, 
+            imageUrl
+          );
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PlayerScreen()),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(right: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                image: DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  )
+                ],
+              ),
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF8B2CF5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.play_arrow, color: Colors.white, size: 20),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: 140,
+              child: Text(
+                title, 
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                maxLines: 1, 
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            SizedBox(
+              width: 140,
+              child: Text(
+                subtitle, 
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-  Widget _buildItem(String title, String subtitle, String imageUrl) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 15),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(width: 140, height: 140, decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), image: DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover))),
-        const SizedBox(height: 10),
-        Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-      ]),
-    );
-  }
 }
+
 
 class _ExploreGrid extends StatelessWidget {
   const _ExploreGrid();

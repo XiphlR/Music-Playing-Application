@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:get_it/get_it.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:just_audio/just_audio.dart'; // import loop mode
 
 import '../widgets/player_widgets.dart';
 import '../services/audio_handler.dart'; 
@@ -19,14 +19,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
     super.initState();
-    if (_audioHandler is MyAudioHandler) {
-      (_audioHandler).loadSong(
-        'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-        "The Future of UI",
-        "Design Matters Podcast",
-        "https://images.unsplash.com/photo-1614850523060-8da1d56ae167"
-      );
-    }
   }
 
   @override
@@ -40,16 +32,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
             stream: _audioHandler.mediaItem,
             builder: (context, snapshot) {
               final mediaItem = snapshot.data;
-
               if (mediaItem == null) {
                 return const Center(child: CircularProgressIndicator(color: kPrimaryColor));
               }
 
               return Column(
                 children: [
-                  const TopNavBar(),
+                  const TopNavBar(), 
                   const SizedBox(height: 30),
                   
+                  // รูปปก
                   Hero(
                     tag: 'album_art',
                     child: AlbumArt(artUri: mediaItem.artUri?.toString()),
@@ -80,6 +72,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
                       return Column(
                         children: [
+                          // Progress Bar
                           StreamBuilder<Duration>(
                             stream: AudioService.position,
                             builder: (context, positionSnapshot) {

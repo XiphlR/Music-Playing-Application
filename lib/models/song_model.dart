@@ -14,7 +14,7 @@ class SongModel extends HiveObject {
   late String artist;
 
   @HiveField(3)
-  late String artUri;
+  late String artUrl;
 
   @HiveField(4)
   late String audioUrl;
@@ -23,7 +23,17 @@ class SongModel extends HiveObject {
     required this.id,
     required this.title,
     required this.artist,
-    required this.artUri,
+    required this.artUrl,
     required this.audioUrl,
   });
+
+  factory SongModel.fromJson(Map<String, dynamic> json) {
+  return SongModel(
+    id: json['id'].toString(),
+    title: json['title'] ?? '',
+    artist: json['artist'] ?? '',
+    artUrl: json['artUrl'] ?? '',
+    audioUrl: json['audioUrl'] ?? '',
+  );
+}
 }

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:audio_service/audio_service.dart';
+import 'package:get_it/get_it.dart';
 import '../widgets/app_widgets.dart';
+import '../services/audio_handler.dart';
+import '../services/user_hive_manager.dart';
+import '../models/song_model.dart';
 
 class PlaylistScreen extends StatefulWidget {
   const PlaylistScreen({super.key});
@@ -10,326 +15,278 @@ class PlaylistScreen extends StatefulWidget {
 
 class _PlaylistScreenState extends State<PlaylistScreen> {
   bool isQueueSelected = true;
+  final _audioHandler = GetIt.I<AudioHandler>();
+
+  // ฟังก์ชันช่วยจัดฟอร์แมตเวลา 00:00
+  String _formatDuration(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(d.inMinutes.remainder(60));
+    final seconds = twoDigits(d.inSeconds.remainder(60));
+    return "$minutes:$seconds";
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF151521),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 180),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    const _LibraryHeader(),
-                    
-                    const SizedBox(height: 20),
-                    
-                    _buildToggleSwitch(),
-                    
-                    const SizedBox(height: 30),
-                    
-                    if (isQueueSelected) ...[
-                      const Text(
-                        "NOW PLAYING",
-                        style: TextStyle(
-                            color: Color(0xFF8B2CF5),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2),
-                      ),
-                      const SizedBox(height: 15),
-                      const _NowPlayingCard(),
-                      
-                      const SizedBox(height: 30),
-                      
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Up Next", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text("Clear Queue", style: TextStyle(color: Color(0xFF8B2CF5), fontSize: 12, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      
-                      const _UpNextList(),
-                      
-                      const SizedBox(height: 20),
-                      
-                      _buildAddMusicButton(),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Column(
-                children: [
-                  if (isQueueSelected) const _FloatingControlPanel(),
-                  const SizedBox(height: 10),
-                  const CustomBottomNavBar(selectedIndex: 2),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToggleSwitch() {
-    return Container(
-      width: double.infinity,
-      height: 50,
-      decoration: BoxDecoration(
-        color: const Color(0xFF2C2C35),
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: Stack(
+      bottomNavigationBar: const Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
+          MiniPlayer(),
+          CustomBottomNavBar(selectedIndex: 2),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => isQueueSelected = true),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isQueueSelected ? const Color(0xFF8B2CF5) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text(
-                      "Queue",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => isQueueSelected = false),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: !isQueueSelected ? const Color(0xFF8B2CF5) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Playlists",
-                      style: TextStyle(
-                        color: !isQueueSelected ? Colors.white : Colors.grey,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 10),
+              const _LibraryHeader(),
+              const SizedBox(height: 20),
+              _buildToggleSwitch(),
+              const SizedBox(height: 30),
+              
+              // สลับเนื้อหาตามปุ่มที่เลือก
+              isQueueSelected ? _buildQueueContent() : _buildPlaylistsContent(),
+              const SizedBox(height: 100), // เว้นที่กัน MiniPlayer ทับ
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildAddMusicButton() {
-    return Container(
-      width: double.infinity,
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.white.withOpacity(0.2), style: BorderStyle.solid),
-      ),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+  // --- ส่วน Queue (ข้อมูลจาก AudioHandler) ---
+  Widget _buildQueueContent() {
+    return StreamBuilder<MediaItem?>(
+      stream: _audioHandler.mediaItem,
+      builder: (context, snapshot) {
+        final currentSong = snapshot.data;
+        // ดึงรายการคิวปัจจุบัน
+        final queue = (_audioHandler as MyAudioHandler).currentQueue;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: const Icon(Icons.add, size: 16, color: Colors.black),
-            ),
-            const SizedBox(width: 10),
-            const Text("Add Music", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// --- Widgets เฉพาะของหน้า Playlist ---
-
-class _LibraryHeader extends StatelessWidget {
-  const _LibraryHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Spacer(),
-        const Text(
-          "Library",
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const Spacer(),
-        TextButton(
-          onPressed: () {},
-          child: const Text("Edit", style: TextStyle(color: Color(0xFF8B2CF5), fontWeight: FontWeight.bold)),
-        )
-      ],
-    );
-  }
-}
-
-class _NowPlayingCard extends StatelessWidget {
-  const _NowPlayingCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2C2C35).withOpacity(0.5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF8B2CF5).withOpacity(0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8B2CF5).withOpacity(0.1),
-            blurRadius: 20,
-            spreadRadius: 0,
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              image: const DecorationImage(
-                image: NetworkImage('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=100&q=80'),
-                fit: BoxFit.cover,
+            const Text("NOW PLAYING", style: TextStyle(color: Color(0xFF8B2CF5), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            const SizedBox(height: 15),
+            
+            if (currentSong != null) ...[
+              // แสดงเพลงที่กำลังเล่น (แสดงปุ่มสองขีดปกติ)
+              _buildSongTile(
+                currentSong.title, 
+                currentSong.artist ?? "Unknown", 
+                currentSong.artUri.toString(), 
+                isPlaying: true
               ),
-            ),
-          ),
-          const SizedBox(width: 15),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              
+              // 🌟 แถบ Progress Bar สำหรับกรอเพลง
+              StreamBuilder<Duration>(
+                stream: AudioService.position,
+                builder: (context, posSnapshot) {
+                  final position = posSnapshot.data ?? Duration.zero;
+                  final duration = currentSong.duration ?? Duration.zero;
+
+                  return Column(
+                    children: [
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 4,
+                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                          activeTrackColor: const Color(0xFF8B2CF5),
+                          inactiveTrackColor: Colors.white10,
+                          thumbColor: Colors.white,
+                        ),
+                        child: Slider(
+                          value: position.inMilliseconds.toDouble().clamp(0, duration.inMilliseconds.toDouble() + 1),
+                          min: 0,
+                          max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
+                          onChanged: (val) {
+                            _audioHandler.seek(Duration(milliseconds: val.toInt()));
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(_formatDuration(position), style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                            Text(_formatDuration(duration), style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ] else
+              const Center(child: Text("No song playing", style: TextStyle(color: Colors.grey))),
+            
+            const SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Midnight City", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                Text("M83 • Hurry Up, We're Dreaming", style: TextStyle(color: Colors.grey, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                const Text("Up Next", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                GestureDetector(
+                  onTap: () async {
+                    await (_audioHandler).clearQueue();
+                    setState(() {});
+                                    },
+                  child: const Text("Clear Queue", style: TextStyle(color: Color(0xFF8B2CF5), fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
               ],
             ),
-          ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(color: Color(0xFF8B2CF5), shape: BoxShape.circle),
-            child: const Icon(Icons.pause, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
-}
+            const SizedBox(height: 15),
 
-class _UpNextList extends StatelessWidget {
-  const _UpNextList();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildListItem("Waves", "Kanye West", "https://images.unsplash.com/photo-1439405326854-014607f694d7?auto=format&fit=crop&w=100&q=80"),
-        _buildListItem("Blinding Lights", "The Weeknd", "https://images.unsplash.com/photo-1614850523060-8da1d56ae167?auto=format&fit=crop&w=100&q=80"),
-        _buildListItem("Someone Like You", "Adele", "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=100&q=80"),
-        _buildListItem("Starboy", "The Weeknd, Daft Punk", "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=100&q=80"),
-      ],
+            // 🌟 แสดงรายการคิวถัดไป พร้อมปุ่มลบแทนที่ปุ่มสองขีด
+            ...queue.asMap().entries.where((entry) => entry.key > 0).map((entry) {
+              final item = entry.value;
+              return _buildSongTile(
+                item.title, 
+                item.artist ?? "Unknown", 
+                item.artUri.toString(),
+              );
+            }),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildListItem(String title, String artist, String imageUrl) {
+  // --- ส่วน Playlists ---
+  Widget _buildPlaylistsContent() {
+    return FutureBuilder<List<SongModel>>(
+      future: UserHiveManager.getFavorites(),
+      builder: (context, snapshot) {
+        final favSongs = snapshot.data ?? [];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Your Playlists", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                const Icon(Icons.add, color: Color(0xFF8B2CF5)),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildPlaylistItem("My Favorites", "${favSongs.length} songs", Icons.favorite, () async {
+              if (favSongs.isNotEmpty) {
+                if (_audioHandler is MyAudioHandler) {
+                  await (_audioHandler).clearQueue();
+                  for (var s in favSongs) {
+                    await (_audioHandler).addSongToQueue(s);
+                  }
+                }
+                _audioHandler.play();
+              }
+            }),
+          ],
+        );
+      },
+    );
+  }
+
+  // 🌟 ส่วน Song Tile: แก้ไข Trailing ให้ปุ่มลบมาแทนที่ปุ่มสองขีด
+  Widget _buildSongTile(String title, String artist, String imgUrl, {bool isPlaying = false, VoidCallback? onDelete}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: 15),
       child: Row(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(15),
-            child: Image.network(imageUrl, width: 55, height: 55, fit: BoxFit.cover),
+            child: Image.network(imgUrl, width: 55, height: 55, fit: BoxFit.cover, errorBuilder: (c,e,s) => Container(color: Colors.grey, width: 55)),
           ),
           const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 4),
-                Text(artist, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13)),
+                Text(
+                  title, 
+                  style: TextStyle(color: isPlaying ? const Color(0xFF8B2CF5) : Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  artist, 
+                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
-          Icon(Icons.more_horiz, color: Colors.white.withOpacity(0.3)),
-          const SizedBox(width: 15),
-          Icon(Icons.drag_handle, color: Colors.white.withOpacity(0.3)),
+          
+          // 🌟 เช็คเงื่อนไข: ถ้ามี onDelete (Up Next) ให้แสดงปุ่มลบ ถ้าไม่มี (Now Playing) ให้แสดงปุ่มสองขีด
+          onDelete != null 
+            ? IconButton(
+                icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 22),
+                onPressed: onDelete,
+              )
+            : const Icon(Icons.drag_handle, color: Colors.white24),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPlaylistItem(String title, String subtitle, IconData icon, VoidCallback onTap) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        width: 55, height: 55,
+        decoration: BoxDecoration(color: const Color(0xFF2C2C35), borderRadius: BorderRadius.circular(15)),
+        child: Icon(icon, color: const Color(0xFF8B2CF5)),
+      ),
+      title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      subtitle: Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+      trailing: const Icon(Icons.play_circle_fill, color: Color(0xFF8B2CF5)),
+    );
+  }
+
+  Widget _buildToggleSwitch() {
+    return Container(
+      width: double.infinity, height: 50,
+      decoration: BoxDecoration(color: const Color(0xFF2C2C35), borderRadius: BorderRadius.circular(25)),
+      child: Row(
+        children: [
+          _toggleBtn("Queue", isQueueSelected, () => setState(() => isQueueSelected = true)),
+          _toggleBtn("Playlists", !isQueueSelected, () => setState(() => isQueueSelected = false)),
+        ],
+      ),
+    );
+  }
+
+  Widget _toggleBtn(String text, bool active, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFF8B2CF5) : Colors.transparent,
+            borderRadius: BorderRadius.circular(25),
+          ),
+          alignment: Alignment.center,
+          child: Text(text, style: TextStyle(color: active ? Colors.white : Colors.grey, fontWeight: FontWeight.bold)),
+        ),
       ),
     );
   }
 }
 
-class _FloatingControlPanel extends StatelessWidget {
-  const _FloatingControlPanel();
-
+class _LibraryHeader extends StatelessWidget {
+  const _LibraryHeader();
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2C2C35),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.shuffle, color: Colors.white),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.repeat, color: Colors.white),
-            onPressed: () {},
-          ),
-          ElevatedButton.icon(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF8B2CF5),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            ),
-            icon: const Icon(Icons.save, size: 18, color: Colors.white),
-            label: const Text("Save as Playlist", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-          )
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Spacer(),
+        const Text("Library", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+        const Spacer(),
+      ],
     );
   }
 }

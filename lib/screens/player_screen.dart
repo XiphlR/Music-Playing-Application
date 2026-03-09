@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:get_it/get_it.dart';
-import 'package:just_audio/just_audio.dart'; // import loop mode
+import 'package:just_audio/just_audio.dart';
 
 import '../widgets/player_widgets.dart';
 import '../services/audio_handler.dart'; 
+import '../services/user_hive_manager.dart';
+import '../models/song_model.dart';
+
+
 
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({super.key});
@@ -19,6 +23,51 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
     super.initState();
+    _initUserPlayer(); 
+  }
+
+  // ==========================================
+  // ฟังก์ชันดึงเพลงล่าสุดและดักเซฟเพลงแยกตาม User
+  // ==========================================
+  Future<void> _initUserPlayer() async {
+    // 1. ลองดึงเพลงที่เคยฟังค้างไว้ (Fail-safe เผื่อ audio_handler โหลดไม่ทัน)
+    try {
+      final lastSong = await UserHiveManager.getCurrentSong();
+      
+      if (lastSong != null && _audioHandler.mediaItem.value == null) {
+        final mediaItem = MediaItem(
+          id: lastSong.id,
+          title: lastSong.title,
+          artist: lastSong.artist,
+          artUri: Uri.parse(lastSong.artUrl),
+          extras: {'audioUrl': lastSong.audioUrl},
+        );
+        
+        // ยัดข้อมูลเข้า Audio Service ให้ UI แสดงผล
+        await _audioHandler.addQueueItem(mediaItem);
+        
+        // หมายเหตุ: กรณีใช้ MyAudioHandler ที่เราทำไว้ มันจะโหลดเพลงขึ้นมาเองอยู่แล้ว 
+        // โค้ดก้อนนี้ทำหน้าที่เป็นตัวสำรองกันเหนียวครับ
+      }
+    } catch (e) {
+      debugPrint("Error loading last song: $e");
+    }
+
+    // 2. แอบดักฟังเพื่อเซฟเพลงลงลิสต์ "ประวัติ 3 เพลงล่าสุด" อัตโนมัติเวลาเปลี่ยนเพลง
+    _audioHandler.mediaItem.listen((mediaItem) async {
+      if (mediaItem != null) {
+        final currentSongModel = SongModel(
+          id: mediaItem.id, // ใช้ ID เพลง
+          title: mediaItem.title,
+          artist: mediaItem.artist ?? 'Unknown Artist',
+          artUrl: mediaItem.artUri?.toString() ?? '',
+          audioUrl: mediaItem.extras?['audioUrl'] ?? mediaItem.id, // ดึงจาก extras หรือ id
+        );
+        
+        // 🌟 บันทึกลง Recent Songs ส่วน Current Song ปล่อยให้ Audio Handler จัดการครับ
+        await UserHiveManager.addRecentSong(currentSongModel);
+      }
+    });
   }
 
   @override
@@ -33,8 +82,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
             builder: (context, snapshot) {
               final mediaItem = snapshot.data;
               if (mediaItem == null) {
-                return const Center(child: CircularProgressIndicator(color: kPrimaryColor));
+                // 🌟 แก้ตัวแปรสีตรงนี้ให้เป็น Hex Color ตรงๆ ป้องกัน Error หาไม่เจอ
+                return const Center(child: CircularProgressIndicator(color: Color(0xFF8B2CF5)));
               }
+
+              final currentSongModel = SongModel(
+                id: mediaItem.id,
+                title: mediaItem.title,
+                artist: mediaItem.artist ?? 'Unknown Artist',
+                artUrl: mediaItem.artUri?.toString() ?? '',
+                audioUrl: mediaItem.extras?['audioUrl'] ?? mediaItem.id,
+              );
 
               return Column(
                 children: [
@@ -49,14 +107,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   
                   const SizedBox(height: 30),
                   
+                  // ชื่อเพลง
                   Hero(
                     tag: 'song_title',
                     child: Material(
                       color: Colors.transparent,
-                      child: SongInfoSection(
-                        title: mediaItem.title,
-                        artist: mediaItem.artist ?? '',
-                      ),
+                      child: SongInfoSection(song: currentSongModel),
                     ),
                   ),
                   

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "song1",
+    "title": "Daily Mix 1",
+    "artist": "Dua Lipa, Drake",
+    "artUrl": "https://images.unsplash.com/photo-1514525253440-b393452e3726?auto=format&fit=crop&w=200&q=80",
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+  },
+  {
+    "id": "song2",
+    "title": "愛♡スクリ～ム!",
+    "artist": "Ai♡Scream!",
+    "artUrl": "https://upload.wikimedia.org/wikipedia/en/d/d1/AiScReam_-_Ai_Scream%21.png",
+    "audioUrl": "https://www.dropbox.com/scl/fi/5wfwjk9779o4humsztoag/Ai-Scream-AiScReam-Lyrics-COLOR-CODED-LoveLive-Njma.mp3?rlkey=lg8zcz1wwlif0j0yrlvkjnvfq&st=rwheoyaj&dl=1"
+  },
+  {
+    "id": "song3",
+    "title": "Touch",
+    "artist": "KATSEYE",
+    "artUrl": "https://i.ytimg.com/vi/l9CZykYZkOQ/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDkQ9YTWh7x42vFvHyerdxnWt8gvw",
+    "audioUrl": "https://www.dropbox.com/scl/fi/t51aanddts1x7ask85ek0/KATSEYE-Touch-Official-MV-HYBE-LABELS.mp3?rlkey=il4y00h7o484b83td0lfprv2o&st=t8lgi1za&dl=1"
+  },
+  {
+    "id": "song4",
+    "title": "Jazz Vibes",
+    "artist": "Smooth Jazz",
+    "artUrl": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=200&q=80",
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
+  },
+  {
+    "id": "song5",
+    "title": "Rock Classics",
+    "artist": "The Legends",
+    "artUrl": "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=200&q=80",
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+  },
+  {
+    "id": "song6",
+    "title": "「なぜ？謎？！ANSWER」",
+    "artist": "熊田茜音＆増井優花",
+    "artUrl": "https://i.ytimg.com/vi/-BmG84OEpSM/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDetnQhfZEqg-pgnoqhwiTsFtIOOQ",
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+  },
+  {
+    "id": "song7",
+    "title": "Rock Classics",
+    "artist": "The Legends",
+    "artUrl": "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=200&q=80",
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+  },
+  {
+    "id": "song8",
+    "title": "Rock Classics",
+    "artist": "The Legends",
+    "artUrl": "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=200&q=80",
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+  },
+  {
+    "id": "song9",
+    "title": "Rock Classics",
+    "artist": "The Legends",
+    "artUrl": "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=200&q=80",
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+  },
+  {
+    "id": "song10",
+    "title": "Rock Classics",
+    "artist": "The Legends",
+    "artUrl": "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=200&q=80",
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+  }
+]

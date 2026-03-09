@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:audio_service/audio_service.dart';
 
+import '../services/user_hive_manager.dart'; 
 import '../services/audio_handler.dart'; 
+import '../models/song_model.dart'; 
 
 const Color kPrimaryColor = Color(0xFF8B2CF5);
 const Color kSecondaryColor = Color(0xFF2C2C35);
 const Color kInactiveColor = Colors.grey;
-
 
 // 1. Top Navigation Bar
 class TopNavBar extends StatelessWidget {
@@ -20,23 +21,13 @@ class TopNavBar extends StatelessWidget {
       children: [
         IconButton(
           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context); 
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         Text(
           "NOW PLAYING",
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
-            letterSpacing: 1.2,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white.withOpacity(0.6), letterSpacing: 1.2, fontSize: 12, fontWeight: FontWeight.bold),
         ),
-        IconButton(
-          icon: const Icon(Icons.more_horiz, color: Colors.white),
-          onPressed: () {},
-        ),
+        IconButton(icon: const Icon(Icons.more_horiz, color: Colors.white), onPressed: () {}),
       ],
     );
   }
@@ -61,22 +52,85 @@ class AlbumArt extends StatelessWidget {
   }
 }
 
-// 3. Song Info Widget
-class SongInfoSection extends StatelessWidget {
-  final String title;
-  final String artist;
-  const SongInfoSection({super.key, required this.title, required this.artist});
+// 3. Song Info Widget (รับตัวแปร SongModel ตรงๆ)
+class SongInfoSection extends StatefulWidget {
+  final SongModel song; 
+  const SongInfoSection({super.key, required this.song});
+
+  @override
+  State<SongInfoSection> createState() => _SongInfoSectionState();
+}
+
+class _SongInfoSectionState extends State<SongInfoSection> {
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavoriteStatus();
+  }
+
+  @override
+  void didUpdateWidget(covariant SongInfoSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // ถ้าเปลี่ยนเพลง ให้เช็คสถานะหัวใจใหม่
+    if (oldWidget.song.id != widget.song.id) {
+      _loadFavoriteStatus();
+    }
+  }
+
+  Future<void> _loadFavoriteStatus() async {
+    bool status = await UserHiveManager.isFavorite(widget.song.id);
+    if (mounted) {
+      setState(() {
+        _isFavorite = status;
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+    // ส่ง SongModel ทั้งก้อนไปเซฟ
+    await UserHiveManager.toggleFavorite(widget.song, _isFavorite);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 6),
-          Text(artist, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.6))),
-        ])),
-        Container(decoration: const BoxDecoration(color: kSecondaryColor, shape: BoxShape.circle), child: IconButton(icon: const Icon(Icons.favorite_border, color: Colors.grey), onPressed: () {})),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.song.title, 
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)
+              ),
+              const SizedBox(height: 6),
+              Text(
+                widget.song.artist, 
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.6))
+              ),
+            ],
+          ),
+        ),
+        Container(
+          decoration: const BoxDecoration(color: kSecondaryColor, shape: BoxShape.circle),
+          child: IconButton(
+            icon: Icon(
+              _isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: _isFavorite ? kPrimaryColor : Colors.grey,
+            ),
+            onPressed: _toggleFavorite,
+          ),
+        ),
       ],
     );
   }
@@ -110,7 +164,7 @@ class ProgressBarSection extends StatelessWidget {
   String _formatDuration(Duration duration) { String twoDigits(int n) => n.toString().padLeft(2, '0'); final minutes = twoDigits(duration.inMinutes.remainder(60)); final seconds = twoDigits(duration.inSeconds.remainder(60)); return "$minutes:$seconds"; }
 }
 
-
+// 5. Playback Controls
 class PlaybackControls extends StatelessWidget {
   final bool isPlaying;
   final bool isRepeat;
@@ -134,14 +188,8 @@ class PlaybackControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        IconButton(
-          icon: const Icon(Icons.shuffle, color: kInactiveColor),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36),
-          onPressed: onPrevious,
-        ),
+        IconButton(icon: const Icon(Icons.shuffle, color: kInactiveColor), onPressed: () {}),
+        IconButton(icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36), onPressed: onPrevious),
         GestureDetector(
           onTap: onPlayPause,
           child: Container(
@@ -150,27 +198,14 @@ class PlaybackControls extends StatelessWidget {
             decoration: BoxDecoration(
               color: kPrimaryColor,
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: kPrimaryColor.withOpacity(0.5), blurRadius: 20, spreadRadius: 2)
-              ],
+              boxShadow: [BoxShadow(color: kPrimaryColor.withOpacity(0.5), blurRadius: 20, spreadRadius: 2)],
             ),
-            child: Icon(
-              isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Colors.white,
-              size: 36,
-            ),
+            child: Icon(isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 36),
           ),
         ),
+        IconButton(icon: const Icon(Icons.skip_next, color: Colors.white, size: 36), onPressed: onNext),
         IconButton(
-          icon: const Icon(Icons.skip_next, color: Colors.white, size: 36),
-          onPressed: onNext,
-        ),
-
-        IconButton(
-          icon: Icon(
-            isRepeat ? Icons.repeat_one : Icons.repeat, 
-            color: isRepeat ? kPrimaryColor : kInactiveColor
-          ),
+          icon: Icon(isRepeat ? Icons.repeat_one : Icons.repeat, color: isRepeat ? kPrimaryColor : kInactiveColor),
           onPressed: onRepeat,
         ),
       ],

@@ -20,7 +20,7 @@ class SongModelAdapter extends TypeAdapter<SongModel> {
       id: fields[0] as String,
       title: fields[1] as String,
       artist: fields[2] as String,
-      artUri: fields[3] as String,
+      artUrl: fields[3] as String,
       audioUrl: fields[4] as String,
     );
   }
@@ -36,7 +36,7 @@ class SongModelAdapter extends TypeAdapter<SongModel> {
       ..writeByte(2)
       ..write(obj.artist)
       ..writeByte(3)
-      ..write(obj.artUri)
+      ..write(obj.artUrl)
       ..writeByte(4)
       ..write(obj.audioUrl);
   }

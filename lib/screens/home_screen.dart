@@ -102,7 +102,7 @@ class _HomeHeader extends StatelessWidget {
         CircleAvatar(
           radius: 25,
           // คุณสามารถเปลี่ยนเป็นรูปโปรไฟล์จริงได้ถ้ามี artUrl ใน UserData
-          backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=' + username + '&background=8B2CF5&color=fff'),
+          backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=$username&background=8B2CF5&color=fff'),
         ),
         const SizedBox(width: 15),
         Column(

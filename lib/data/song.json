@@ -39,7 +39,7 @@
     "title": "「なぜ？謎？！ANSWER」",
     "artist": "熊田茜音＆増井優花",
     "artUrl": "https://i.ytimg.com/vi/-BmG84OEpSM/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDetnQhfZEqg-pgnoqhwiTsFtIOOQ",
-    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+    "audioUrl": "https://www.dropbox.com/scl/fi/0lx1olr20290ikazavgej/ANSWER-ver.mp3?rlkey=68l99aoisbasm7cgketnjeco0&st=kldctp6b&dl=1"
   },
   {
     "id": "song7",
@@ -50,23 +50,31 @@
   },
   {
     "id": "song8",
-    "title": "Rock Classics",
-    "artist": "The Legends",
-    "artUrl": "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=200&q=80",
-    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+    "title": "Operation Basepoint",
+    "artist": "塞壬唱片-MSR · Life Awaits",
+    "artUrl": "https://i.ytimg.com/vi/TxlrwSXy2z8/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCzihsASqkEEI2J2fDvkKpeGhDzfg",
+    "audioUrl": "https://www.dropbox.com/scl/fi/1clmi9hl3gzqiemin2wvy/Operation-Basepoint.mp3?rlkey=jhgdkkhdl36u5wagd8u6e54sh&st=j31l2lz5&dl=1"
   },
   {
     "id": "song9",
-    "title": "Rock Classics",
-    "artist": "The Legends",
-    "artUrl": "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=200&q=80",
-    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+    "title": "องค์หญิงปิ๊ใหญ่(อร่อยจนปิ๊เรืองแสง)",
+    "artist": "Nitantonkla  BY - แก๊งรูปิ๊",
+    "artUrl": "https://i.ytimg.com/vi/zzVitPJBByA/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLBkGEGCLVRwT2QBgT5Vp6JnWZQsUw",
+    "audioUrl": "https://www.dropbox.com/scl/fi/3bdaorumq5qr5lcu6duq2/2026-NEW-VERSION.mp3?rlkey=do0blhun66du5en6jyfvtz5y0&st=zqiao5ql&dl=1"
   },
   {
     "id": "song10",
-    "title": "Rock Classics",
-    "artist": "The Legends",
-    "artUrl": "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=200&q=80",
-    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+    "title": "Tower of Flower",
+    "artist": "SAYURI",
+    "artUrl": "https://i1.sndcdn.com/artworks-o8lMPX60l62Pz8uG-5k2NpA-t500x500.jpg",
+    "audioUrl": "https://www.dropbox.com/scl/fi/xbjn4pppg7f9fl16ylpw4/Tower-of-Flower.mp3?rlkey=948dew6moim655ofmqkuzsx5d&st=91jciudw&dl=1"
+  }
+  ,
+  {
+    "id": "song11",
+    "title": "aLIEz",
+    "artist": "SawanoHiroyuki[nZk] · mizuki",
+    "artUrl": "https://i.ytimg.com/vi/dNGiRuLABgI/maxresdefault.jpg",
+    "audioUrl": "https://www.dropbox.com/scl/fi/orllz0ljjlj1spxajqggp/aLIEz.mp3?rlkey=mw3imz6okwl1rsw5xgqc3vcij&st=muoyafls&dl=1"
   }
 ]

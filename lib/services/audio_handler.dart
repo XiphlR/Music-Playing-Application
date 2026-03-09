@@ -20,7 +20,6 @@ class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
   final _playlist = ConcatenatingAudioSource(children: []);
   
-  // ตัวแปรล็อค Logic กันคิวเอ๋อ
   bool _isRemoving = false;
 
   MyAudioHandler() {
@@ -29,7 +28,6 @@ class MyAudioHandler extends BaseAudioHandler {
     
     _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
 
-    // ดักฟังเวลาทั้งหมด
     _player.durationStream.listen((duration) {
       final item = mediaItem.value;
       if (item != null && duration != null) {
@@ -37,7 +35,6 @@ class MyAudioHandler extends BaseAudioHandler {
       }
     });
 
-    // ลบเฉพาะเพลงเก่า และป้องกันการลบสะบัดจนคิวหาย
     _player.currentIndexStream.listen((index) async {
       if (index != null && index > 0 && !_isRemoving) {
         _isRemoving = true; 
@@ -69,23 +66,37 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> loadSong(String url, String title, String artist, String artUri) async {
     try {
       _isRemoving = true; 
+      await _player.stop(); 
       await _playlist.clear();
+      
       final item = MediaItem(
-        id: url, album: "Music Player", title: title, artist: artist,
+        id: url, 
+        album: "Music Player", 
+        title: title, 
+        artist: artist,
         artUri: Uri.tryParse(artUri),
       );
+
       await _playlist.add(AudioSource.uri(Uri.parse(url), tag: item));
       
+      final volume = await UserHiveManager.getVolume();
+      await _player.setVolume(volume);
+      
+      await _player.load(); 
+
       final startPos = await UserHiveManager.getProgress(url);
       await _player.seek(startPos);
+      
       await _player.play();
       await _saveProgress();
+      
       _isRemoving = false;
     } catch (e) {
       _isRemoving = false;
-      debugPrint("Error loading: $e");
+      debugPrint("Error loading new song: $e");
     }
   }
+  
 
   Future<void> addSongToQueue(SongModel song) async {
     final item = MediaItem(
@@ -105,6 +116,7 @@ class MyAudioHandler extends BaseAudioHandler {
       .map((source) => (source as UriAudioSource).tag as MediaItem)
       .toList();
 
+  @override
   Future<void> setVolume(double volume) async {
     await _player.setVolume(volume);
     await UserHiveManager.saveVolume(volume); 
@@ -143,6 +155,16 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> skipToPrevious() => _player.seekToPrevious();
 
+  // 🌟 ฟังก์ชันจัดการ Shuffle Mode
+  @override
+  Future<void> setShuffleMode(AudioServiceShuffleMode shuffleMode) async {
+    final enabled = shuffleMode != AudioServiceShuffleMode.none;
+    if (enabled) {
+      await _player.shuffle(); // ทำการสุ่มลำดับเพลงใน Playlist ปัจจุบัน
+    }
+    await _player.setShuffleModeEnabled(enabled);
+  }
+
   Future<void> toggleRepeat() async {
     await _player.setLoopMode(_player.loopMode == LoopMode.off ? LoopMode.one : LoopMode.off);
   }
@@ -168,7 +190,12 @@ class MyAudioHandler extends BaseAudioHandler {
         if (_player.playing) MediaControl.pause else MediaControl.play,
         MediaControl.skipToNext,
       ],
-      systemActions: const {MediaAction.seek, MediaAction.seekForward, MediaAction.seekBackward},
+      systemActions: const {
+        MediaAction.seek, 
+        MediaAction.seekForward, 
+        MediaAction.seekBackward,
+        MediaAction.setShuffleMode, // 🌟 เพิ่ม Action นี้เพื่อให้ UI สั่งงานได้
+      },
       androidCompactActionIndices: const [0, 1, 2],
       processingState: const {
         ProcessingState.idle: AudioProcessingState.idle,
@@ -182,6 +209,10 @@ class MyAudioHandler extends BaseAudioHandler {
       bufferedPosition: _player.bufferedPosition,
       speed: _player.speed,
       queueIndex: event.currentIndex,
+      // 🌟 ส่งสถานะ Shuffle ปัจจุบันกลับไปที่ UI
+      shuffleMode: _player.shuffleModeEnabled 
+          ? AudioServiceShuffleMode.all 
+          : AudioServiceShuffleMode.none,
     );
   }
 }

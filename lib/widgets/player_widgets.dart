@@ -164,23 +164,27 @@ class ProgressBarSection extends StatelessWidget {
   String _formatDuration(Duration duration) { String twoDigits(int n) => n.toString().padLeft(2, '0'); final minutes = twoDigits(duration.inMinutes.remainder(60)); final seconds = twoDigits(duration.inSeconds.remainder(60)); return "$minutes:$seconds"; }
 }
 
-// 5. Playback Controls
+// 5. Playback Controls (ปรับปรุงใหม่)
 class PlaybackControls extends StatelessWidget {
   final bool isPlaying;
   final bool isRepeat;
+  final bool isShuffle; // 🌟 เพิ่มสถานะ Shuffle
   final VoidCallback onPlayPause;
   final VoidCallback onNext;
   final VoidCallback onPrevious;
   final VoidCallback onRepeat;
+  final VoidCallback onShuffle; // 🌟 เพิ่มฟังก์ชันสับเปลี่ยนโหมด Shuffle
 
   const PlaybackControls({
     super.key,
     required this.isPlaying,
     required this.isRepeat,
+    required this.isShuffle, // 🌟
     required this.onPlayPause,
     required this.onNext,
     required this.onPrevious,
     required this.onRepeat,
+    required this.onShuffle, // 🌟
   });
 
   @override
@@ -188,8 +192,20 @@ class PlaybackControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        IconButton(icon: const Icon(Icons.shuffle, color: kInactiveColor), onPressed: () {}),
-        IconButton(icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36), onPressed: onPrevious),
+        // 🌟 ปุ่ม Shuffle ที่ทำงานได้จริง
+        IconButton(
+          icon: Icon(
+            Icons.shuffle, 
+            color: isShuffle ? kPrimaryColor : kInactiveColor, // เปลี่ยนสีตามสถานะ
+          ), 
+          onPressed: onShuffle,
+        ),
+        
+        IconButton(
+          icon: const Icon(Icons.skip_previous, color: Colors.white, size: 36), 
+          onPressed: onPrevious,
+        ),
+        
         GestureDetector(
           onTap: onPlayPause,
           child: Container(
@@ -198,14 +214,24 @@ class PlaybackControls extends StatelessWidget {
             decoration: BoxDecoration(
               color: kPrimaryColor,
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: kPrimaryColor.withOpacity(0.5), blurRadius: 20, spreadRadius: 2)],
+              boxShadow: [
+                BoxShadow(color: kPrimaryColor.withOpacity(0.5), blurRadius: 20, spreadRadius: 2)
+              ],
             ),
             child: Icon(isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 36),
           ),
         ),
-        IconButton(icon: const Icon(Icons.skip_next, color: Colors.white, size: 36), onPressed: onNext),
+        
         IconButton(
-          icon: Icon(isRepeat ? Icons.repeat_one : Icons.repeat, color: isRepeat ? kPrimaryColor : kInactiveColor),
+          icon: const Icon(Icons.skip_next, color: Colors.white, size: 36), 
+          onPressed: onNext,
+        ),
+        
+        IconButton(
+          icon: Icon(
+            isRepeat ? Icons.repeat_one : Icons.repeat, 
+            color: isRepeat ? kPrimaryColor : kInactiveColor,
+          ),
           onPressed: onRepeat,
         ),
       ],
